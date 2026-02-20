@@ -19,13 +19,15 @@ const PanelManagement = () => {
     userName: '',
     password: '',
     transactionPin: '',
-    gameId: ''
+    gameId: '',
+    adminLink: ''
   });
   const [editFormData, setEditFormData] = useState({
     panelName: '',
     userName: '',
     password: '',
-    transactionPin: ''
+    transactionPin: '',
+    adminLink: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showPin, setShowPin] = useState(false);
@@ -83,7 +85,7 @@ const PanelManagement = () => {
       await apiHelper.post('/panel/createPanel', formData);
       showToast('Panel created successfully', 'success');
       setShowCreateForm(false);
-      setFormData({ panelName: '', userName: '', password: '', transactionPin: '', gameId: '' });
+      setFormData({ panelName: '', userName: '', password: '', transactionPin: '', gameId: '', adminLink: '' });
       fetchPanels(currentPage);
     } catch (error) {
       showToast(error.message || 'Failed to create panel', 'error');
@@ -198,7 +200,8 @@ const PanelManagement = () => {
       panelName: panel.panelName || panel.name || '',
       userName: panel.userName || panel.username || '',
       password: panel.password || '',
-      transactionPin: panel.transactionPin || ''
+      transactionPin: panel.transactionPin || '',
+      adminLink: panel.adminLink || ''
     });
     setShowEditForm(true);
   };
@@ -212,7 +215,7 @@ const PanelManagement = () => {
       showToast('Panel updated successfully', 'success');
       setShowEditForm(false);
       setEditingPanel(null);
-      setEditFormData({ panelName: '', userName: '', password: '', transactionPin: '' });
+      setEditFormData({ panelName: '', userName: '', password: '', transactionPin: '', adminLink: '' });
       fetchPanels(currentPage);
     } catch (error) {
       showToast(error.message || 'Failed to update panel', 'error');
@@ -318,8 +321,14 @@ const PanelManagement = () => {
                         <p className="text-sm text-gray-600">{panelGroup.length} panel{panelGroup.length > 1 ? 's' : ''}</p>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {panelGroup.filter(p => p.isActive !== undefined ? p.isActive : p.status === 'active' || p.active).length} active
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm font-bold">
+                        <span className="text-gray-700">Available Balance: </span>
+                        <span className="text-green-600">₹{panelGroup[0]?.panelBalance || 0}</span>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {panelGroup.filter(p => p.isActive !== undefined ? p.isActive : p.status === 'active' || p.active).length} active
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -527,6 +536,19 @@ const PanelManagement = () => {
                     </button>
                   </div>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Admin Link
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.adminLink}
+                    onChange={(e) => setFormData({...formData, adminLink: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Admin Link"
+                  />
+                </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button
@@ -625,6 +647,18 @@ const PanelManagement = () => {
                     </button>
                   </div>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Admin Link
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.adminLink}
+                    onChange={(e) => setEditFormData({...editFormData, adminLink: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Admin Link"
+                  />
+                </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button
@@ -632,7 +666,7 @@ const PanelManagement = () => {
                   onClick={() => {
                     setShowEditForm(false);
                     setEditingPanel(null);
-                    setEditFormData({ panelName: '', userName: '', password: '', transactionPin: '' });
+                    setEditFormData({ panelName: '', userName: '', password: '', transactionPin: '', adminLink: '' });
                   }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
