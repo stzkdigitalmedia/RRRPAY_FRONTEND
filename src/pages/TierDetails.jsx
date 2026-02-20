@@ -14,11 +14,15 @@ const TierDetails = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tierInfo, setTierInfo] = useState(null);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [showAssignTier, setShowAssignTier] = useState(false);
   const [assignTierUser, setAssignTierUser] = useState(null);
   const [tiers, setTiers] = useState([]);
   const [selectedTierId, setSelectedTierId] = useState('');
   const [assignTierLoading, setAssignTierLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchFilter, setSearchFilter] = useState('');
   const toast = useToastContext();
 
   const handleLogout = async () => {
@@ -44,13 +48,16 @@ const TierDetails = () => {
     }
   };
 
-  const fetchTierUsers = async () => {
+  const fetchTierUsers = async (page = 1, filter = '') => {
     setLoading(true);
     try {
-      const response = await apiHelper.get(`/tier/getUsersByTier/${tierId}`);
+      const response = await apiHelper.get(`/tier/getUsersByTier/${tierId}?page=${page}&limit=50&filter=${filter}`);
       if (response?.data) {
         setUsers(response.data.users || []);
         setTierInfo(response.data.tier || null);
+        setTotalUsers(response.data.totalUsers || 0);
+        setCurrentPage(response.data.currentPage || page);
+        setTotalPages(response.data.totalPages || 1);
       }
     } catch (error) {
       toast.error('Failed to fetch tier users');
@@ -110,9 +117,9 @@ const TierDetails = () => {
 
   useEffect(() => {
     if (tierId) {
-      fetchTierUsers();
+      fetchTierUsers(currentPage, searchFilter);
     }
-  }, [tierId]);
+  }, [tierId, currentPage]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -157,9 +164,32 @@ const TierDetails = () => {
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-gray-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Users in this Tier</h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-gray-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Users in this Tier</h3>
+                </div>
+                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                  {totalUsers} Users
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Search by client name or phone..."
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <button
+                  onClick={() => {
+                    setCurrentPage(1);
+                    fetchTierUsers(1, searchFilter);
+                  }}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                >
+                  Search
+                </button>
               </div>
             </div>
 
@@ -222,6 +252,31 @@ const TierDetails = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!loading && users.length > 0 && totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Page {currentPage} of {totalPages}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             )}
           </div>

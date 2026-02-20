@@ -555,6 +555,40 @@ const UsersList = ({ onUserDeleted, onUsersCountChange, onBalanceSumChange }) =>
     document.body.classList.remove('modal-open');
   };
 
+  const downloadUsersExcel = async () => {
+    try {
+      const response = await apiHelper.get('/user/getUsers?page=1&limit=100000');
+      const allUsers = response?.data || response?.users || [];
+
+      if (allUsers.length === 0) {
+        toast.error('No users to download');
+        return;
+      }
+
+      const excelData = allUsers.map((user, index) => ({
+        'S.No': index + 1,
+        'Client Name': user?.clientName || 'N/A',
+        'Full Name': user?.fullName || 'N/A',
+        'Phone': user?.phone || 'N/A',
+        'Email': user?.email || 'N/A',
+        'Balance': user?.balance || 0,
+        'Role': user?.role || 'N/A',
+        'Status': user?.status || user?.isActive !== false ? 'Active' : 'Inactive',
+        'Created Date': user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN') : 'N/A',
+        'Created Time': user?.createdAt ? new Date(user.createdAt).toLocaleTimeString('en-IN') : 'N/A'
+      }));
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      XLSX.utils.book_append_sheet(wb, ws, 'Users');
+      const fileName = `Users_${new Date().toLocaleDateString('en-IN').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      toast.success('Excel file downloaded successfully!');
+    } catch (error) {
+      toast.error('Failed to download Excel file: ' + error.message);
+    }
+  };
+
   const toggleUserStatus = async (user) => {
     try {
       await apiHelper.patch(`/user/activeInactiveUserStatus/${user?.id || user?._id}`);
@@ -657,6 +691,17 @@ const UsersList = ({ onUserDeleted, onUsersCountChange, onBalanceSumChange }) =>
           onChange={(e) => setMaxAmount(e.target.value)}
           className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
         />
+      </div>
+
+      {/* Download Button */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={downloadUsersExcel}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+        >
+          <Download size={16} />
+          Download Users
+        </button>
       </div>
 
 
@@ -1142,6 +1187,7 @@ const UsersList = ({ onUserDeleted, onUsersCountChange, onBalanceSumChange }) =>
                   <thead className="table-header">
                     <tr>
                       <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">GameID</th>
                       <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                       <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                       <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">GameName</th>
@@ -1158,6 +1204,9 @@ const UsersList = ({ onUserDeleted, onUsersCountChange, onBalanceSumChange }) =>
                       <tr key={transaction?.id || transaction?._id || index} className="border-b border-gray-100">
                         <td className="py-4 px-4">
                           <p className="text-sm font-medium text-gray-900">{((historyCurrentPage - 1) * 10) + index + 1}</p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <p className="text-sm text-gray-900">{transaction?.clientName || 'N/A'}</p>
                         </td>
                         <td className="py-4 px-4">
                           {transaction?.transactionType === 'Withdrawal' &&

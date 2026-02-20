@@ -33,6 +33,7 @@ const TierManagement = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState(null);
   const [createLoading, setCreateLoading] = useState(false);
+  const [manageUsersLoading, setManageUsersLoading] = useState(false);
   const [formData, setFormData] = useState({
     teirName: '',
     branches: [{ branchName: '', isActive: true }],
@@ -40,6 +41,18 @@ const TierManagement = () => {
     teir_no_of_transaction: ''
   });
   const toast = useToastContext();
+
+  const handleTierWiseManageUsers = async () => {
+    setManageUsersLoading(true);
+    try {
+      await apiHelper.get('/tier/updateTierWiseEligibleUsers');
+      toast.success('Tier wise users managed successfully!');
+    } catch (error) {
+      toast.error('Failed to manage tier wise users');
+    } finally {
+      setManageUsersLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     const userRole = localStorage.getItem('userRole') || user?.role;
@@ -308,13 +321,21 @@ const TierManagement = () => {
                     <h2 className="text-2xl font-bold text-gray-900">Tier Overview</h2>
                     <p className="text-gray-600 mt-1">{tiers.length} tier{tiers.length !== 1 ? 's' : ''} configured</p>
                   </div>
-                  <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-                  >
-                    <Plus size={20} />
-                    Add New Tier
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleTierWiseManageUsers}
+                      className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                    >
+                      Tier Wise Manage User
+                    </button>
+                    <button
+                      onClick={() => setShowCreateModal(true)}
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                    >
+                      <Plus size={20} />
+                      Add New Tier
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="grid gap-6">
@@ -903,6 +924,15 @@ const TierManagement = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {manageUsersLoading && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
+          <div className="text-center">
+            <div className="loading-spinner mx-auto mb-4" style={{ width: '50px', height: '50px', borderWidth: '4px' }}></div>
+            <p className="text-white text-lg font-medium">Managing tier wise users...</p>
           </div>
         </div>
       )}

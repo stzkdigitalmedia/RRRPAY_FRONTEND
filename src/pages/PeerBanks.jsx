@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import PeerSidebar from '../components/peer/PeerSidebar';
+import { useAuth } from '../hooks/useAuth';
 
-const DEFAULT_USER_ID = '697dfaf3a21085957445d0fd';
 
 const PeerBanks = () => {
+  const { user } = useAuth();
   const [banks, setBanks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -12,7 +13,7 @@ const PeerBanks = () => {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState(null);
   const [form, setForm] = useState({
-    userId: DEFAULT_USER_ID,
+    userId: user?._id ,
     upiId: '',
     bankName: '',
     accNo: '',
@@ -25,7 +26,7 @@ const PeerBanks = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/bank/getAllBanks_With_Pagination/${DEFAULT_USER_ID}?page=1&limit=20`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/bank/getAllBanks_With_Pagination/${user?._id}?page=1&limit=20`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -59,14 +60,14 @@ const PeerBanks = () => {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           userId: DEFAULT_USER_ID,
-          bankId: bankId 
+          bankId: bankId
         })
       });
 
       const data = await res.json();
-      if(data.success){
+      if (data.success) {
         fetchBanks()
       }
       if (!res.ok) throw new Error(data?.message || 'Failed to toggle bank status');
@@ -110,7 +111,7 @@ const PeerBanks = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       <PeerSidebar />
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 ml-64">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">Banks</h1>
           <button onClick={() => setShowCreateModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create Bank</button>

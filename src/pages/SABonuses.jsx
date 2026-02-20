@@ -16,6 +16,7 @@ const SABonuses = () => {
   const [bonuses, setBonuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('active');
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -32,7 +33,6 @@ const SABonuses = () => {
     endDate: '',
     tierId: '',
     maxAmount: '',
-    up_to_amount: '',
     image: null
   });
 
@@ -80,11 +80,11 @@ const SABonuses = () => {
     }
   };
 
-  const fetchBonuses = async () => {
+  const fetchBonuses = async (isActive = true) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiHelper.get('/bonus/getAllBonuses?page=1&limit=50');
+      const response = await apiHelper.get(`/bonus/getAllBonuses?page=1&limit=50&isActive=${isActive}`);
       console.log('Fetch bonuses response:', response);
       const data = response?.data?.bonuses || response?.bonuses || response?.data || response || [];
       console.log('Bonuses data:', data);
@@ -123,7 +123,6 @@ const SABonuses = () => {
       if (formData.endDate) formDataToSend.append('endDate', formData.endDate);
       if (formData.tierId) formDataToSend.append('tierId', formData.tierId);
       if (formData.maxAmount) formDataToSend.append('maxAmount', formData.maxAmount);
-      if (formData.up_to_amount) formDataToSend.append('up_to_amount', formData.up_to_amount);
       if (formData.image) formDataToSend.append('image', formData.image);
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/bonus/createBonus`, {
@@ -145,7 +144,6 @@ const SABonuses = () => {
         endDate: '',
         tierId: '',
         maxAmount: '',
-        up_to_amount: '',
         image: null
       });
       toast.success('Bonus created successfully!');
@@ -203,7 +201,6 @@ const SABonuses = () => {
       endDate: bonus.endDate ? bonus.endDate.split('T')[0] : '',
       tierId: bonus.tierId?._id || bonus.tierId || '',
       maxAmount: bonus.maxAmount || '',
-      up_to_amount: bonus.up_to_amount || '',
       image: null
     });
     setShowUpdateModal(true);
@@ -223,7 +220,6 @@ const SABonuses = () => {
       if (formData.endDate) formDataToSend.append('endDate', formData.endDate);
       if (formData.tierId) formDataToSend.append('tierId', formData.tierId);
       if (formData.maxAmount) formDataToSend.append('maxAmount', formData.maxAmount);
-      if (formData.up_to_amount) formDataToSend.append('up_to_amount', formData.up_to_amount);
       if (formData.image) formDataToSend.append('image', formData.image);
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/bonus/updateBonus/${selectedBonus._id}`, {
@@ -246,7 +242,6 @@ const SABonuses = () => {
         endDate: '',
         tierId: '',
         maxAmount: '',
-        up_to_amount: '',
         image: null
       });
       toast.success('Bonus updated successfully!');
@@ -258,9 +253,9 @@ const SABonuses = () => {
   };
 
   useEffect(() => {
-    fetchBonuses();
+    fetchBonuses(activeTab === 'active');
     fetchTiers();
-  }, []);
+  }, [activeTab]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -273,7 +268,29 @@ const SABonuses = () => {
         />
 
         <div className="p-4 sm:p-6 lg:p-8">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActiveTab('active')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'active'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Active Bonuses
+              </button>
+              <button
+                onClick={() => setActiveTab('inactive')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'inactive'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Inactive Bonuses
+              </button>
+            </div>
             <button
               onClick={() => setShowCreateModal(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
@@ -482,16 +499,6 @@ const SABonuses = () => {
                     value={formData.maxAmount}
                     onChange={(e) => setFormData({ ...formData, maxAmount: e.target.value })}
                     placeholder="Enter max amount"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Up To Amount</label>
-                  <input
-                    type="number"
-                    value={formData.up_to_amount}
-                    onChange={(e) => setFormData({ ...formData, up_to_amount: e.target.value })}
-                    placeholder="Enter up to amount"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>

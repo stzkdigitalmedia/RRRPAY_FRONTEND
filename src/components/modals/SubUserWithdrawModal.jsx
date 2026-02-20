@@ -23,13 +23,13 @@ const SubUserWithdrawModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-[100]" style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
-            <div className="p-4 sm:p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto" style={{ background: '#2a2a2a', borderRadius: '12px', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+        <div className="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-[100]">
+            <div className="gaming-card p-4 sm:p-6 max-w-md w-full mx-4">
                 {/* Modal Header */}
                 <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h2 className="text-xl font-semibold" style={{ color: '#ffffff' }}>{t('withdrawFromSub')}</h2>
-                        <p className="text-sm mt-1" style={{ color: '#9ca3af' }}>ID: {selectedSubUserId || 'N/A'}</p>
+                        <h2 className="text-xl font-semibold text-gray-900">{t('withdrawFromSub')}</h2>
+                        <p className="text-gray-600 text-sm mt-1">ID: {selectedSubUserId || 'N/A'}</p>
                         {/* Sub User Balance Display */}
                         <div className="mt-2">
                             {isBalanceLoading ? (
@@ -52,7 +52,7 @@ const SubUserWithdrawModal = ({
                             )}
                         </div>
                     </div>
-                    <button onClick={onClose} style={{ color: '#9ca3af' }}>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -61,25 +61,24 @@ const SubUserWithdrawModal = ({
                 {isBalanceLoading ? (
                     <div className="text-center py-8">
                         <div className="loading-spinner mx-auto mb-4" style={{ width: '32px', height: '32px' }}></div>
-                        <p className="text-lg font-semibold mb-2" style={{ color: '#ffffff' }}>{t('loadingBalance')}</p>
-                        <p className="text-sm" style={{ color: '#9ca3af' }}>Please wait while we fetch the current balance</p>
+                        <p className="text-lg font-semibold text-gray-900 mb-2">{t('loadingBalance')}</p>
+                        <p className="text-sm text-gray-600">Please wait while we fetch the current balance</p>
                     </div>
                 ) : (
                     // Withdraw Form
                     <form onSubmit={onSubmit} className="space-y-4">
-                        {/* Amount Field - Minimum ₹500 */}
+                        {/* Amount Field */}
                         <div className="form-group">
-                            <label className="block text-sm font-medium mb-2" style={{ color: '#d1d5db' }}>Amount (Minimum ₹500)</label>
+                            <label className="form-label">Amount (Minimum ₹100)</label>
                             <input
                                 type="number"
-                                placeholder="Enter Amount (min 500)"
+                                placeholder="Enter Amount (min 100)"
                                 value={withdrawForm.amount}
                                 onChange={(e) => onFormChange({ ...withdrawForm, amount: e.target.value })}
                                 onWheel={(e) => e.target.blur()}
-                                className="w-full px-4 py-3 rounded-lg"
-                                style={{ background: '#1a1a1a', border: '1px solid #4b5563', color: '#ffffff' }}
+                                className="gaming-input"
                                 required
-                                min="500"
+                                min="100"
                             />
                         </div>
 
@@ -88,14 +87,14 @@ const SubUserWithdrawModal = ({
 
                         {/* Form Actions */}
                         <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                            <button type="submit" disabled={isProcessing} className="flex-1 py-3 rounded-lg font-semibold" style={{ background: '#ffa600', color: '#000000' }}>
+                            <button type="submit" disabled={isProcessing} className="w-full sm:flex-1 gaming-btn">
                                 {isProcessing ? (
                                     <>{t('processing')}</>
                                 ) : (
                                     <>{t('withdraw')}</>
                                 )}
                             </button>
-                            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-lg font-semibold" style={{ border: '1px solid #4b5563', color: '#d1d5db', background: 'transparent' }}>
+                            <button type="button" onClick={onClose} className="w-full sm:flex-1 btn-secondary">
                                 {t('cancel')}
                             </button>
                         </div>

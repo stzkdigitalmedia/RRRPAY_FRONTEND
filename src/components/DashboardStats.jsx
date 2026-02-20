@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UsersList from './UsersList';
 import AddUserForm from './AddUserForm';
@@ -31,6 +31,7 @@ const DashboardStats = () => {
       key: 'selection'
     }
   ]);
+  const hasFetched = useRef(false);
   const toast = useToastContext();
   const navigate = useNavigate();
 
@@ -84,7 +85,7 @@ const DashboardStats = () => {
 
       const activeUser = await apiHelper.post('/user/getActiveUserLogsCount', deleteIdsPayload);
       setActiveUsercount(activeUser)
-      console.log(activeUser)
+      // console.log(activeUser)
       // Fetch today deposit requests count
       const todayDepositResponse = await apiHelper.get(`/transaction/getDeposit_Users_Transaction_forDashboard?startDate=${startUTC}&endDate=${endUTC}`);
       setTodayDepositCount(todayDepositResponse?.userCount || 0);
@@ -92,6 +93,7 @@ const DashboardStats = () => {
       // Fetch today withdrawal requests count
       const todayWithdrawalResponse = await apiHelper.get(`/transaction/getWithdraw_Users_Transaction_forDashboard?startDate=${startUTC}&endDate=${endUTC}`);
       setTodayWithdrawalCount(todayWithdrawalResponse?.userCount || 0);
+      
 
       // Fetch profit & loss
       const profitLossResponse = await apiHelper.get('/transaction/profit_and_loss_for_SuperAdmin');
@@ -138,16 +140,10 @@ const DashboardStats = () => {
   };
 
   useEffect(() => {
-    // First time load
-    fetchDashboardSummary();
-
-    // Auto refresh every 30 seconds
-    // const interval = setInterval(() => {
-    //   fetchDashboardSummary();
-    // }, 300000); // 30000 ms = 30 sec
-
-    // Cleanup interval when component unmounts
-    // return () => clearInterval(interval);
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchDashboardSummary();
+    }
   }, []);
 
   return (
@@ -206,145 +202,108 @@ const DashboardStats = () => {
 
       {/* Dashboard Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        {loading ? (
-          <div className="col-span-full text-center py-8">
-            <div className="loading-spinner mx-auto mb-2" style={{ width: '24px', height: '24px' }}></div>
-            <p className="text-gray-600 text-sm">Loading summary...</p>
+        <>
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/deposit-transactions')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">PayIn Amount</h3>
+            <p className="text-2xl font-bold text-green-600">₹{dashSummary?.transactionsDetails?.totalDeposit?.toLocaleString() || 0}</p>
+            <p className="text-xs text-gray-500 mt-1">Count: {dashSummary?.transactionsDetails?.depositCount || 0}</p>
           </div>
-        ) : (dashSummary || externalStats) ? (
-          <>
-            <div
-              className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/deposit-transactions')}
-            >
-              <h3 className="text-sm font-medium text-gray-500">PayIn Amount</h3>
-              <p className="text-2xl font-bold text-green-600">₹{dashSummary?.transactionsDetails?.totalDeposit?.toLocaleString() || 0}</p>
-              <p className="text-xs text-gray-500 mt-1">Count: {dashSummary?.transactionsDetails?.depositCount || 0}</p>
-            </div>
-            <div
-              className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/withdrawal-transactions')}
-            >
-              <h3 className="text-sm font-medium text-gray-500">PayOut Amount</h3>
-              <p className="text-2xl font-bold text-red-600">₹{dashSummary?.transactionsDetails?.totalWithdrawal?.toLocaleString() || 0}</p>
-              <p className="text-xs text-gray-500 mt-1">Count: {dashSummary?.transactionsDetails?.withdrawalCount || 0}</p>
-            </div>
-            <div
-              className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/user-registrations')}
-            >
-              <h3 className="text-sm font-medium text-gray-500">New User Registrations</h3>
-              <p className="text-2xl font-bold text-blue-600">{dashSummary?.userRegistrationsCount || 0}</p>
-            </div>
-            <div
-              className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/ftd-complete-users')}
-            >
-              <h3 className="text-sm font-medium text-gray-500">FTD Complete User</h3>
-              <p className="text-2xl font-bold text-green-600">{dashSummary?.userRegistrationsCount - dashSummary?.userRegistrationsNoTransactionCount || 0}</p>
-            </div>
-            <div
-              className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/no-transaction-users')}
-            >
-              <h3 className="text-sm font-medium text-gray-500">FTD Pending User</h3>
-              <p className="text-2xl font-bold text-orange-600">{dashSummary?.userRegistrationsNoTransactionCount || 0}</p>
-            </div>
-            <div 
-              className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/active-users')}
-            >
-              <h3 className="text-sm font-medium text-gray-500">Active User</h3>
-              <p className="text-2xl font-bold text-green-600">{activeUsercount?.totalActiveUsers}</p>
-            </div>
-            {/* <div
-              className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/delete-logs')}
-            >
-              <h3 className="text-sm font-medium text-gray-500">Delete Ids</h3>
-              <p className={`text-xl font-bold text-red-600`}>
-                {deleteIdsCount}
-              </p>
-            </div> */}
-
-          </>
-        ) : null}
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/withdrawal-transactions')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">PayOut Amount</h3>
+            <p className="text-2xl font-bold text-red-600">₹{dashSummary?.transactionsDetails?.totalWithdrawal?.toLocaleString() || 0}</p>
+            <p className="text-xs text-gray-500 mt-1">Count: {dashSummary?.transactionsDetails?.withdrawalCount || 0}</p>
+          </div>
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/user-registrations')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">New User Registrations</h3>
+            <p className="text-2xl font-bold text-blue-600">{dashSummary?.userRegistrationsCount || 0}</p>
+          </div>
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/ftd-complete-users')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">FTD Complete User</h3>
+            <p className="text-2xl font-bold text-green-600">{dashSummary?.ftd_users_count|| 0}</p>
+          </div>
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/no-transaction-users')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">FTD Pending User</h3>
+            <p className="text-2xl font-bold text-orange-600">{dashSummary?.userRegistrationsNoTranxCount || 0}</p>
+          </div>
+          <div 
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/active-users')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">Active User</h3>
+            <p className="text-2xl font-bold text-green-600">{activeUsercount?.totalActiveUsers || 0}</p>
+          </div>
+        </>
       </div>
 
       {/* Status Wise Breakdown */}
-      {(dashSummary?.statusWiseBreakdown || externalStats) && (
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Status Wise Breakdown</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* External API Status Cards */}
-            {externalStats && (
-              <>
-                <div
-                  className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleStatusClick('Initial')}
-                >
-                  <h3 className="text-sm font-medium text-gray-500">Initial</h3>
-                  <p className="text-xl font-bold text-blue-600">₹{externalStats?.Initial?.amount?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-gray-500 mt-1">{externalStats?.Initial?.count || 0} transactions</p>
-                  <p className="text-xs text-gray-500">{externalStats?.Initial?.users || 0} users</p>
-                </div>
-                <div
-                  className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleStatusClick('Pending')}
-                >
-                  <h3 className="text-sm font-medium text-gray-500">Pending</h3>
-                  <p className="text-xl font-bold text-yellow-600">₹{externalStats?.Pending?.amount?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-gray-500 mt-1">{externalStats?.Pending?.count || 0} transactions</p>
-                  <p className="text-xs text-gray-500">{externalStats?.Pending?.users || 0} users</p>
-                </div>
-                <div
-                  className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleStatusClick('Accept')}
-                >
-                  <h3 className="text-sm font-medium text-gray-500">Accept</h3>
-                  <p className="text-xl font-bold text-green-600">₹{externalStats?.Accept?.amount?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-gray-500 mt-1">{externalStats?.Accept?.count || 0} transactions</p>
-                  <p className="text-xs text-gray-500">{externalStats?.Accept?.users || 0} users</p>
-                </div>
-                <div
-                  className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleStatusClick('Reject')}
-                >
-                  <h3 className="text-sm font-medium text-gray-500">Reject</h3>
-                  <p className="text-xl font-bold text-red-600">₹{externalStats?.Reject?.amount?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-gray-500 mt-1">{externalStats?.Reject?.count || 0} transactions</p>
-                  <p className="text-xs text-gray-500">{externalStats?.Reject?.users || 0} users</p>
-                </div>
-              </>
-            )}
-
-
-
-
-
-
-
-            {/* Local API Status Cards (fallback) */}
-            {!externalStats && dashSummary?.statusWiseBreakdown && Object.entries(dashSummary.statusWiseBreakdown).filter(([status]) => status !== 'Insufficent').map(([status, data]) => (
-              <div
-                key={status}
-                className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => handleStatusClick(status)}
-              >
-                <h3 className="text-sm font-medium text-gray-500">{status}</h3>
-                <p className={`text-xl font-bold ${getStatusColor(status)}`}>₹{data.amount || 0}</p>
-                <p className="text-sm text-gray-500 mt-1">{data.count || 0} transactions</p>
-                <p className="text-sm text-gray-500">{data.users || 0} users</p>
-              </div>
-            ))}
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Status Wise Breakdown</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+          >
+            <h3 className="text-sm font-medium text-gray-500">Bonus</h3>
+            <p className="text-xl font-bold text-green-600">₹{dashSummary?.totalBonus?.totalBonus?.toLocaleString() || 0}</p>
+            <p className="text-sm text-gray-500 mt-1">{dashSummary?.totalBonus?.count || 0} transactions</p>
+          </div>
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleStatusClick('Initial')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">Initial</h3>
+            <p className="text-xl font-bold text-blue-600">₹{dashSummary?.statusWiseBreakdown?.Initial?.amount?.toLocaleString() || 0}</p>
+            <p className="text-sm text-gray-500 mt-1">{dashSummary?.statusWiseBreakdown?.Initial?.count || 0} transactions</p>
+            <p className="text-xs text-gray-500">{dashSummary?.statusWiseBreakdown?.Initial?.users || 0} users</p>
+          </div>
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleStatusClick('Pending')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">Pending</h3>
+            <p className="text-xl font-bold text-yellow-600">₹{dashSummary?.statusWiseBreakdown?.Pending?.amount?.toLocaleString() || 0}</p>
+            <p className="text-sm text-gray-500 mt-1">{dashSummary?.statusWiseBreakdown?.Pending?.count || 0} transactions</p>
+            <p className="text-xs text-gray-500">{dashSummary?.statusWiseBreakdown?.Pending?.users || 0} users</p>
+          </div>
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleStatusClick('Accept')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">Accept</h3>
+            <p className="text-xl font-bold text-green-600">₹{dashSummary?.statusWiseBreakdown?.Accept?.amount?.toLocaleString() || 0}</p>
+            <p className="text-sm text-gray-500 mt-1">{dashSummary?.statusWiseBreakdown?.Accept?.count || 0} transactions</p>
+            <p className="text-xs text-gray-500">{dashSummary?.statusWiseBreakdown?.Accept?.users || 0} users</p>
+          </div>
+          <div
+            className="gaming-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleStatusClick('Reject')}
+          >
+            <h3 className="text-sm font-medium text-gray-500">Reject</h3>
+            <p className="text-xl font-bold text-red-600">₹{dashSummary?.statusWiseBreakdown?.Reject?.amount?.toLocaleString() || 0}</p>
+            <p className="text-sm text-gray-500 mt-1">{dashSummary?.statusWiseBreakdown?.Reject?.count || 0} transactions</p>
+            <p className="text-xs text-gray-500">{dashSummary?.statusWiseBreakdown?.Reject?.users || 0} users</p>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Overall User Data */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Overall User Data</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <>
             {/* <h2 className="text-xl font-semibold text-gray-900 mb-4 w-full">Status Wise Breakdown</h2> */}
             <div className="gaming-card p-4 pb-4 cursor-pointer hover:shadow-lg transition-shadow">
@@ -355,12 +314,15 @@ const DashboardStats = () => {
               <h3 className="text-sm font-medium text-gray-500">Total Wallet Balance</h3>
               <p className="text-xl font-bold text-green-600">₹{totalBalance.toLocaleString()}</p>
             </div>
-            <div className="gaming-card p-4 pb-4 cursor-pointer hover:shadow-lg transition-shadow">
+            {
+              console.log(profitLoss.amount.toLocaleString())
+            }
+            {/* <div className="gaming-card p-4 pb-4 cursor-pointer hover:shadow-lg transition-shadow">
               <h3 className="text-sm font-medium text-gray-500">Profit & Loss</h3>
               <p className={`text-xl font-bold ${profitLoss.status === 'Profit' ? 'text-green-600' : 'text-red-600'}`}>
                 ₹{profitLoss.amount.toLocaleString()}
               </p>
-            </div>
+            </div> */}
             <div className="gaming-card p-4 pb-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/deposit-transactions')}>
               <h3 className="text-sm font-medium text-gray-500">Today Deposit Requests</h3>
               <p className="text-xl font-bold text-green-600">{todayDepositCount}</p>

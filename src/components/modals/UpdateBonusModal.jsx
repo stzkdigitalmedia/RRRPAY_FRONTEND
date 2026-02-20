@@ -118,16 +118,6 @@ const UpdateBonusModal = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Up To Amount</label>
-              <input
-                type="number"
-                value={formData.up_to_amount}
-                onChange={(e) => onFormChange({ ...formData, up_to_amount: e.target.value })}
-                placeholder="Enter up to amount"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              />
-            </div>
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
               <input
                 type="file"

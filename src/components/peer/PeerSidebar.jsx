@@ -7,6 +7,7 @@ const PeerSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  
 
   const handleLogout = async () => {
     const userRole = localStorage.getItem('userRole') || user?.role;
@@ -21,7 +22,7 @@ const PeerSidebar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="w-64 bg-white shadow-lg flex flex-col">
+    <div className="w-64 bg-white shadow-lg flex flex-col h-screen fixed overflow-hidden">
       <div className="p-6 border-b">
         <h2 className="text-xl font-bold text-gray-900">Peer Dashboard</h2>
       </div>
