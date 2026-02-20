@@ -38,7 +38,7 @@ const CreateTransactionModal = ({
 
     console.log('--------CreateTransactionModal-----')
 
-    // Local state for UTR upload popup (shown when Deposit + DRPLAY)
+    // Local state for UTR upload popup (shown when Deposit + RRRPAY)
     const [showUTRModal, setShowUTRModal] = useState(false);
     const [utrNo, setUtrNo] = useState('');
     const [screenshotFile, setScreenshotFile] = useState(null);
@@ -79,11 +79,11 @@ const CreateTransactionModal = ({
         }
     }, [bankDetails, transactionForm.amount]);
 
-    // Auto-select branch if no DRPLAY and only one active branch
+    // Auto-select branch if no RRRPAY and only one active branch
     useEffect(() => {
         if (isOpen && !selectedBranch && user?.teirId?.branches) {
             const activeBranches = user.teirId.branches.filter(branch => branch.isActive);
-            // If no isManual (no DRPLAY option) and only one active branch, auto-select it
+            // If no isManual (no RRRPAY option) and only one active branch, auto-select it
             if (!user.teirId.isManual && activeBranches.length === 1) {
                 onBranchChange(activeBranches[0].branchName);
             }
@@ -122,8 +122,8 @@ const CreateTransactionModal = ({
         formData.append('amount', transactionForm.amount);
         formData.append('transactionType', 'Deposit');
         formData.append('role', 'User');
-        formData.append('mode', 'DRPLAY');
-        formData.append('branchUserName', 'DRPLAY');
+        formData.append('mode', 'RRRPAY');
+        formData.append('branchUserName', 'RRRPAY');
         formData.append('utrNo', utrNo);
         formData.append('userScreenShot', screenshotFile);
 
@@ -201,25 +201,25 @@ const CreateTransactionModal = ({
                         {user?.teirId?.isManual && user.teirId.branches.length > 0 ? (
                             <div className="form-group">
                                 <label className="form-label">Select Payment Method</label>
-                                {/* DRPLAY Option */}
+                                {/* RRRPAY Option */}
                                 <div className="space-y-2 mb-2">
                                     <div
-                                        className={`p-3 border rounded-lg cursor-pointer transition-all ${selectedBranch === 'DRPLAY'
+                                        className={`p-3 border rounded-lg cursor-pointer transition-all ${selectedBranch === 'RRRPAY'
                                             ? 'border-blue-500 bg-blue-50'
                                             : 'border-gray-200 hover:border-gray-300'
                                             }`}
-                                        onClick={() => onBranchChange('DRPLAY')}
+                                        onClick={() => onBranchChange('RRRPAY')}
                                     >
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="radio"
                                                 name="branchSelection"
-                                                value="DRPLAY"
-                                                checked={selectedBranch === 'DRPLAY'}
-                                                onChange={() => onBranchChange('DRPLAY')}
+                                                value="RRRPAY"
+                                                checked={selectedBranch === 'RRRPAY'}
+                                                onChange={() => onBranchChange('RRRPAY')}
                                                 className="text-blue-600 focus:ring-blue-500"
                                             />
-                                            <span className="font-medium text-gray-900">DRPLAY(MANUALLY)</span>
+                                            <span className="font-medium text-gray-900">RRRPAY(MANUALLY)</span>
                                         </div>
                                     </div>
                                 </div>
@@ -359,8 +359,8 @@ const CreateTransactionModal = ({
 
                         {/* Form Actions */}
                         <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                            {selectedBranch === 'DRPLAY' && transactionForm?.transactionType === 'Deposit' ? (
-                                // Special Next button for DRPLAY deposit
+                            {selectedBranch === 'RRRPAY' && transactionForm?.transactionType === 'Deposit' ? (
+                                // Special Next button for RRRPAY deposit
                                 <button
                                     type="button"
                                     onClick={() => {
