@@ -14,7 +14,7 @@ const ManualBalanceLogs = () => {
   const fetchLogs = async (currentPage = 1) => {
     setLoading(true);
     try {
-      const response = await apiHelper.get(`/user/getUpdated_Balance_Logs?page=${currentPage}&limit=10`);
+      const response = await apiHelper.get(`/user/getUpdated_Balance_Logs?page=${currentPage}&limit=10000`);
       const logsData = response?.data?.logs || response?.logs || response?.data || response || [];
       setLogs(logsData);
       setTotalPages(response?.data?.totalPages || response?.totalPages || 1);
